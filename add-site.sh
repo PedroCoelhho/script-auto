@@ -3,11 +3,11 @@
 #Menu
 echo "Oque deseja fazer? escolha um número"
 
-echo "1 - Adicionar um Virtual Rost + criar diretorio do site" #ok
+echo "1 - Adicionar um Virtual Host + criar diretorio do site" #ok
 echo "2 - Remover um virtual Host" #ok
 echo "3 - Remover o diretorio de um site dentro de /var/www/html/" #ok
 echo "4 - Relatório de diretorios hospedados /var/www/html/site" #ok
-echo "5 - Relatório de virtual hosts habilitados" #ok
+echo "5 - Relatório de Virtual Hosts habilitados" #ok
 echo ""
 echo "Press Enter para sair"
 read menu_resposta
