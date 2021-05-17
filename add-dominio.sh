@@ -7,7 +7,6 @@ echo "Oque deseja fazer? escolha um número"
 echo "1 - Criar arquivo de configuração do domino"
 echo "2 - Configurar apontamento no servidor DNS para o site"
 echo "3 - remover um apontamento de um site no servidor DNS"
-echo "4 - Desabilitar um dominio dentro do servidor DNS" 
 echo ""
 echo "Press Enter para sair"
 read menu_resposta
@@ -125,12 +124,6 @@ exit
                 fi
 
 
-
-        ;;
-
-        4)
-        echo "7 - Desabilitar um dominio dentro do servidor DNS"
-        sleep 1
 
         ;;
 
