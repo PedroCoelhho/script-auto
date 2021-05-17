@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #Menu
-echo "Oque deseja fazer? escolha um número"
+echo "Escolha uma das opções abaixo:"
 
-echo "1 - Adicionar um Virtual Host + criar diretorio do site" #ok
-echo "2 - Remover um virtual Host" #ok
-echo "3 - Remover o diretorio de um site dentro de /var/www/html/" #ok
-echo "4 - Relatório de diretorios hospedados /var/www/html/site" #ok
+echo "1 - Adicinar um novo site" #ok
+echo "2 - Remover configurações de um site" #ok
+echo "3 - Remover o conteudo de um site" #ok
+echo "4 - Relatório de diretorios hospedados /var/www/html/" #ok
 echo "5 - Relatório de Virtual Hosts habilitados" #ok
 echo ""
 echo "Press Enter para sair"
@@ -18,15 +18,16 @@ case $menu_resposta in
 
         1)
 
-        echo "Adicionar um Virtual Rost"
+        echo "Adicionar um Virtual Host"
         sleep 1
                 echo "Digite o nome do dominio:"
                 read dominio
 
-                echo "digite o nome do primeiro site"
-                read site
+                #echo "digite o nome do primeiro site"
+                #read site
 
-                echo "O dominio:$dominio e site:$site estão corretos? (y/n)"
+                #echo "O dominio:$dominio e site:$site estão corretos? (y/n)"
+                echo "O dominio:$dominio está correto? (y/n)"
                 read resposta
 
                         if [ $resposta == y ]
@@ -44,15 +45,15 @@ case $menu_resposta in
                                 #Cria o diretorio do dominio
                                 mkdir /var/www/html/$dominio
 
-#Adicionando a conf ao webhost no apache  
+#Adicionando o Virtual Host no apache  
 echo "
 <VirtualHost *:80>
 
-        ServerName www."$site"."$dominio".com.br
-        ServerAlias "$site"."$dominio".com.br
+        ServerName "$dominio"
+        ServerAlias www."$dominio"
         DocumentRoot /var/www/html/$dominio
-        ErrorLog /var/www/html/$dominio/error.log
-        CustomLog /var/www/html/$dominio/access.log combined
+        ErrorLog /var/log/httpd/$dominio-error.log
+        CustomLog /var/log/httpd/$dominio-access.log combined
 
 </VirtualHost>" >> /etc/httpd/conf.d/dominios.conf
 
@@ -62,9 +63,11 @@ echo "<h1>$dominio<h1>" > /var/www/html/$dominio/index.html
 #Adicionando permição do apache para ler o diretorio criado
 chown -R apache. /var/www/html/$dominio
 
+echo "reiniciando serviço do apache"
 #Restart no serviço do apache, relendo os asrquivos de configuração
 systemctl restart httpd
 
+echo "Site adicionado com sucesso"
 fi
 
 else 
@@ -79,10 +82,10 @@ exit
 #---------------------------------------------------------------------------------      
 
         2)
-        echo "4 - Remover um virtual Host"
+        echo "2 - Remover configurações de um site"
         sleep 1
 
-        echo "Digite o nome do Virtual Host que deseja excluir"
+        echo "Digite o nome do dominio:"
         read nome_host
         sleep 1 
 
@@ -98,10 +101,10 @@ exit
 #---------------------------------------------------------------------------------      
 
         3)
-        echo "5 - Remover o diretorio de um site dentro de /var/www/html/site"
+        echo "3 - Remover o conteudo de um site"
         sleep 1
 
-        echo "Qual diretorio deseja remover?"
+        echo "Digite o nome do dominio:"
         read dir_to_remove
 
         #valida se o diretorio existe
@@ -112,12 +115,13 @@ exit
 
                 if [ $resp_dir_to_remove == y ]
                 then
-                        echo "Removendo o Diretorio de hospedagem em /var/www/html/"
+                        echo "Removendo o dominio $dir_to_remove da hospedagem..."
                         sleep 1
                         rm -rf /var/www/html/$dir_to_remove
 
                         #restart no serviço do apache para reler os diretorios
                         systemctl restart httpd
+                        echo "Dominio removido com sucesso!!!"
                 else
                         echo "Não foi possível remover o diretório"
                         sleep 1
@@ -130,7 +134,7 @@ exit
 #---------------------------------------------------------------------------------      
 
         4)
-        echo "8 - Relatório de diretorios hospedados /var/www/html/site"
+        echo "4 - Relatório de diretorios hospedados /var/www/html/"
         sleep 1
 
         ls -l /var/www/html/ | awk -F' ' '{print $9}'
@@ -139,11 +143,10 @@ exit
 
 #---------------------------------------------------------------------------------      
         5)
-        echo "9 - Relatório de virtual hosts habilitados"
+        echo "5 - Relatório de virtual hosts habilitados"
         sleep 1
         #Realiza a leitura do arquivo dos dominios com um parsing e exibe na tela
-       cat /etc/httpd/conf.d/dominios.conf | grep -E "www.*.*.com.br" | sed 's/\t//g' | sed 's/ServerName //g' 
-
+        cat /etc/httpd/conf.d/dominios.conf | grep ServerName |awk '{print $2}'
         ;;
 #---------------------------------------------------------------------------------      
 
@@ -151,3 +154,4 @@ exit
                 echo "Script encerrado"
                 ;;
 esac
+
