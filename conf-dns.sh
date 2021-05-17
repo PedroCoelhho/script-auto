@@ -1,10 +1,8 @@
-#!/bin/bash
-clear
 #Menu
 
-echo "Oque deseja fazer? escolha um número"
+echo "Escolha uma opção abaixo:"
 
-echo "1 - Criar arquivo de configuração do domino"
+echo "1 - Criar novo domino"
 echo "2 - Configurar apontamento no servidor DNS para o site"
 echo "3 - remover um apontamento de um site no servidor DNS"
 echo ""
@@ -16,10 +14,10 @@ case $menu_resposta in
 #-----------------------------------------------------------------
 
         1)
-        echo "1 - Criar arquivo de configuração do domino no servidor DNS"
+        echo "1 - Criar novo domino"
         sleep 1
 
-        echo "Qual o nome do dominio que você deseja adicionar?"
+        echo "Digite o nome do dominio"
         read nome_dominio
 
         #valida se o arquivo existe
@@ -29,39 +27,34 @@ case $menu_resposta in
         else
         
         #Criando arquivo do dominio dentro de /var/named/
-        > /var/named/$nome_dominio\.db
+        > /var/named/"$nome_dominio".db
 
         #Adiciona conteudo dentro do arquivo criado 
         echo "
 \$TTL 3H
-@       IN SOA  @ root."$nome_dominio".com.br. (
+@       IN SOA  @ root."$nome_dominio". (
                                         1       ; serial
                                         1D      ; refresh
                                         1H      ; retry
                                         1W      ; expire
                                         3H )    ; minimum
 
-@                       IN      NS      ns1."$nome_dominio".com.br.
-
-
+@                       IN      NS      ns1."$nome_dominio".
 ns1                     IN      A       192.168.1.10
-
-@                       IN      A       127.0.0.1
-
-www                     IN      A       192.168.1.10
-pedro                   IN      CNAME   www
-teste1                  IN      A       192.168.1.4" >> /var/named/$nome_dominio\.db
+@                       IN      A       192.168.1.4
+www                     IN      A       192.168.1.4" >> /var/named/"$nome_dominio".db
 
 #Configura a zona autoritativa do DNS
 echo "
-zone \""$nome_dominio".com.br\" IN {
+zone \""$nome_dominio"\" IN {
         type master;
         file \"/var/named/"$nome_dominio".db\";
 };" >> /etc/named.conf
 
         #Reinicia o reserviço do DNS para reler os arquivos de configuração
-        systemctl restart named
-
+        rndc flush
+        rndc reload
+        echo "Dominio adicionado com sucesso"
 fi
 
 exit
@@ -85,7 +78,8 @@ exit
                 echo "$nome_site                        IN      A       192.168.1.4" >> /var/named/"$dominio_site".db
 
                 #Reinicia o reserviço do DNS para reler os arquivos de configuração
-                systemctl restart named
+                rndc flush
+                rndc reload
                 else
 
                 echo "O arquivo /var/named/$add_site não exite "
@@ -106,7 +100,8 @@ exit
 
                 #Lista os sites do dominio
                 echo "Sites presentes neste dominio"
-                cat "$nome_domin_remove".db | tail -n +19
+
+                cat /var/named/"$nome_domin_remove".db | tail -n +13
                 echo ""
 
                 echo "Digite o nome do site que quer remover"
@@ -116,7 +111,8 @@ exit
 
 
                 #Reinicia o reserviço do DNS para reler os arquivos de configuração
-                systemctl restart named
+                rndc flush
+                rndc reload
                 else
 
                 echo "O arquivo /var/named/$nome_domin_remove não exite "
